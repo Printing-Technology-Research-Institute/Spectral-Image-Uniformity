@@ -1,0 +1,43 @@
+{
+  "calibration_pixel_p95": 3.0836803489364684e-05,
+  "calibration_pixel_p99": 4.357806756161153e-05,
+  "calibration_source": "16 clean site samples, 4-fold sample-level OOF",
+  "mask_strategy": "largest_8_connected_only",
+  "sample_ids": [
+    "FX17_0001",
+    "FX17_0002",
+    "FX17_0004",
+    "FX17_0005",
+    "FX17_0006",
+    "FX17_0007",
+    "FX17_0008",
+    "FX17_0009",
+    "FX17_0010",
+    "FX17_0011",
+    "FX17_0012",
+    "FX17_0013",
+    "FX17_0014",
+    "FX17_0015",
+    "FX17_0016",
+    "FX17_0017"
+  ],
+  "excluded_contaminated_samples": [
+    "FX17_0003",
+    "FX17_0018"
+  ],
+  "fold_count": 4,
+  "seed": 42,
+  "oof_pixel_count": 677454,
+  "base_model_clean16_oof_pixel_p99": 0.0001472344738431275,
+  "previous_calibration_pixel_p99": 3.892402310157195e-05,
+  "best_epochs_by_fold": [
+    30,
+    30,
+    30,
+    30
+  ],
+  "recommended_final_epochs": 30,
+  "mean_base_oof_residual": 3.3958425774471834e-05,
+  "mean_tuned_oof_residual": 1.9624752894742414e-05,
+  "mean_oof_residual_change_percent": -42.209476470947266
+}

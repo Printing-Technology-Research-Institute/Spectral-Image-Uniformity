@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "read_only_camera_parameters": true,
+  "safety": {
+    "writes_genicam_features": false,
+    "controls_shutter": false,
+    "changes_exposure": false,
+    "changes_pixel_format": false,
+    "starts_and_stops_acquisition": true
+  },
+  "runtime": {
+    "python": "3.9.13 (tags/v3.9.13:6de2ca5, May 17 2022, 16:36:42) [MSC v.1929 64 bit (AMD64)]",
+    "executable": "D:\\FX17_site_bundle\\.venv\\Scripts\\python.exe",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "numpy": "2.0.2"
+  },
+  "cti_path": "D:\\FX17_site_bundle\\動態分析模組\\fx_test\\mvGenTLProducer.cti",
+  "devices": [],
+  "error": "No GenTL device was discovered. Close other camera applications and verify the FX17/GigE Vision connection and NIC driver."
+}

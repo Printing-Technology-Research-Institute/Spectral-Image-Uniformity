@@ -1,0 +1,113 @@
+; mvBlueNAOS.inf
+
+[Version]
+Signature="$WINDOWS NT$"
+Class="MATRIX VISION GmbH PCIe Cameras"
+ClassGuid={46ffc82c-3a16-11eb-98b5-475535fa5142}
+Provider=%MATRIX_VISION%
+CatalogFile=mvBlueNAOS.cat
+DriverVer = 07/01/2022,0.4.2.0
+
+[DestinationDirs]
+DefaultDestDir = 12
+mvBlueNAOS_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+[ClassInstall32]
+Addreg=mvPCIeCameraClassReg
+
+[mvPCIeCameraClassReg]
+HKR,,,,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %INSTDISK%,,,""
+
+[SourceDisksFiles]
+mvBlueNAOS.sys  = 1,,
+WdfCoInstaller01009.dll=1
+
+;*****************************************
+; Install Section
+;*****************************************
+[Manufacturer]
+%MATRIX_VISION%=MatrixVision, NTamd64
+
+[MatrixVision.NTamd64]
+; Gen 1 IDs
+%mvBlueNAOS_Wickie_Gen1.DeviceDesc% = mvBlueNAOS_Device, PCI\VEN_4D56&DEV_7014&REV_00 ; Gen1 x4 lane Wickie
+%mvBlueNAOS_Halvar_Gen1.DeviceDesc% = mvBlueNAOS_Device, PCI\VEN_4D56&DEV_7014&REV_01 ; Gen1 x4 lane Halvar
+%mvBlueNAOS_Ylvi_Gen1.DeviceDesc%   = mvBlueNAOS_Device, PCI\VEN_4D56&DEV_7012&REV_02 ; Gen1 x2 lane Ylvi
+%mvBlueNAOS_Sven_Gen1.DeviceDesc%   = mvBlueNAOS_Device, PCI\VEN_4D56&DEV_7014&REV_04 ; Gen1 x4 lane Sven
+%mvBlueNAOS_Ylva_Gen1.DeviceDesc%   = mvBlueNAOS_Device, PCI\VEN_4D56&DEV_7014&REV_11 ; Gen1 x4 lane Ylva
+; Gen 2 IDs
+%mvBlueNAOS_Wickie_Gen2.DeviceDesc% = mvBlueNAOS_Device, PCI\VEN_4D56&DEV_7024&REV_00 ; Gen2 x4 lane Wickie
+%mvBlueNAOS_Halvar_Gen2.DeviceDesc% = mvBlueNAOS_Device, PCI\VEN_4D56&DEV_7024&REV_01 ; Gen2 x4 lane Halvar
+%mvBlueNAOS_Ylvi_Gen2.DeviceDesc%   = mvBlueNAOS_Device, PCI\VEN_4D56&DEV_7022&REV_02 ; Gen2 x2 lane Ylvi
+%mvBlueNAOS_Sven_Gen2.DeviceDesc%   = mvBlueNAOS_Device, PCI\VEN_4D56&DEV_7024&REV_04 ; Gen2 x4 lane Sven
+%mvBlueNAOS_Ylva_Gen2.DeviceDesc%   = mvBlueNAOS_Device, PCI\VEN_4D56&DEV_7024&REV_11 ; Gen2 x4 lane Ylva
+
+[mvBlueNAOS_Device.NT]
+CopyFiles=Drivers_Dir
+
+[mvBlueNAOS_Device.NT.HW]
+AddReg = mvBlueNAOS_Device_AddReg
+
+[mvBlueNAOS_Device_AddReg]
+HKR,"Interrupt Management",,0x00000010
+HKR,"Interrupt Management\MessageSignaledInterruptProperties",,0x00000010
+HKR,"Interrupt Management\MessageSignaledInterruptProperties",MSISupported,0x00010001,1
+HKR,"Interrupt Management\MessageSignaledInterruptProperties",MessageNumberLimit,0x00010001,4
+
+[Drivers_Dir]
+mvBlueNAOS.sys
+
+;-------------- Service installation
+[mvBlueNAOS_Device.NT.Services]
+AddService = mvBlueNAOS,%SPSVCINST_ASSOCSERVICE%, mvBlueNAOS_Service_Inst
+
+; -------------- mvBlueNAOS driver install sections
+[mvBlueNAOS_Service_Inst]
+DisplayName    = %mvBlueNAOS.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\mvBlueNAOS.sys
+AddReg=mvBlueNAOS_Service_Inst_AddReg
+
+[mvBlueNAOS_Service_Inst_AddReg]
+HKR,Parameters,DmaRemappingCompatible,0x00010001,1    ; where 1 = opt-in
+
+;--- mvBlueNAOS_Device Coinstaller installation ------
+[mvBlueNAOS_Device.NT.CoInstallers]
+AddReg=mvBlueNAOS_Device_CoInstaller_AddReg
+CopyFiles=mvBlueNAOS_Device_CoInstaller_CopyFiles
+
+[mvBlueNAOS_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller01009.dll,WdfCoInstaller"
+
+[mvBlueNAOS_Device_CoInstaller_CopyFiles]
+WdfCoInstaller01009.dll
+
+[mvBlueNAOS_Device.NT.Wdf]
+KmdfService =  mvBlueNAOS, mvBlueNAOS_wdfsect
+
+[mvBlueNAOS_wdfsect]
+KmdfLibraryVersion = 1.9
+
+[Strings]
+MATRIX_VISION                     = "MATRIX VISION GmbH"
+INSTDISK                          = "MATRIX VISION GmbH mvBlueNAOS Camera installation package"
+ClassName                         = "MATRIX VISION GmbH PCIe Cameras"
+mvBlueNAOS_Wickie_Gen1.DeviceDesc = "mvBlueNAOS (BVS CA-BN2) PCIe 1.x" ; Gen1 x4 lane Wickie
+mvBlueNAOS_Halvar_Gen1.DeviceDesc = "mvBlueNAOS (BVS CA-BN2) PCIe 1.x" ; Gen1 x4 lane Halvar
+mvBlueNAOS_Ylvi_Gen1.DeviceDesc   = "mvBlueNAOS (BVS CA-BN1) PCIe 1.x" ; Gen1 x2 lane Ylvi
+mvBlueNAOS_Sven_Gen1.DeviceDesc   = "mvBlueNAOS (BVS CA-BN4) PCIe 1.x" ; Gen1 x4 lane Sven
+mvBlueNAOS_Ylva_Gen1.DeviceDesc   = "mvBlueNAOS (BVS CA-BN2) PCIe 1.x" ; Gen1 x4 lane Ylva
+mvBlueNAOS_Wickie_Gen2.DeviceDesc = "mvBlueNAOS (BVS CA-BN2) PCIe 2.x" ; Gen2 x4 lane Wickie
+mvBlueNAOS_Halvar_Gen2.DeviceDesc = "mvBlueNAOS (BVS CA-BN2) PCIe 2.x" ; Gen2 x4 lane Halvar
+mvBlueNAOS_Ylvi_Gen2.DeviceDesc   = "mvBlueNAOS (BVS CA-BN1) PCIe 2.x" ; Gen2 x2 lane Ylvi
+mvBlueNAOS_Sven_Gen2.DeviceDesc   = "mvBlueNAOS (BVS CA-BN4) PCIe 2.x" ; Gen2 x4 lane Sven
+mvBlueNAOS_Ylva_Gen2.DeviceDesc   = "mvBlueNAOS (BVS CA-BN2) PCIe 2.x" ; Gen2 x4 lane Ylva
+SPSVCINST_ASSOCSERVICE            = 0x00000002
+mvBlueNAOS.SVCDESC                = "mvBlueNAOS Service"

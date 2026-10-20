@@ -1,0 +1,5 @@
+target_compile_definitions(${TARGET} PRIVATE $<$<CONFIG:Debug>:__WXDEBUG__>)
+if(MSVC)
+    target_compile_definitions(${TARGET} PRIVATE UNICODE;_UNICODE;__WXMSW__)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS")
+endif()

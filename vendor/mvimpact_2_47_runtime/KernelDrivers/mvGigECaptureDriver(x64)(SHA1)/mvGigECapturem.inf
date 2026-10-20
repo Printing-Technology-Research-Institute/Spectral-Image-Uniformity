@@ -1,0 +1,63 @@
+; MATRIX VISION GmbH GigE Vision Streaming Filter Miniport INF file
+;
+; (c) 2007 - 2021 MATRIX VISION GmbH
+; ----------------------------------------------------------------------
+[Version]
+signature           = "$Windows NT$"
+Class               = Net
+ClassGUID           = {4d36e972-e325-11ce-bfc1-08002be10318}
+Provider            = %MATRIX_VISION%
+DriverVer           = 12/09/2021, 2.4.3.72
+CatalogFile.NTx86   = mvGigECapturem_x86.cat
+CatalogFile.NTamd64 = mvGigECapturem_amd64.cat
+
+[ControlFlags]
+ExcludeFromSelect = mv_GigECapturemp
+
+[DestinationDirs]
+DefaultDestDir=12
+; No files to copy 
+
+[Manufacturer]
+%MATRIX_VISION% = MatrixVision, NTx86, NTamd64
+
+; for Win2K
+[MatrixVision]
+%GIGE_FLT_DESC% = GigEFltMP.ndi, mv_GigECapturemp
+
+;for XP and later
+[MatrixVision.NTx86]
+%GIGE_FLT_DESC% = GigEFltMP.ndi, mv_GigECapturemp
+
+; for x64 versions of Windows
+[MatrixVision.NTamd64]
+%GIGE_FLT_DESC% = GigEFltMP.ndi, mv_GigECapturemp
+
+[MatrixVision]
+%GIGE_FLT_DESC% = GigEFltMP.ndi, mv_GigECapturemp
+
+[GigEFltMP.ndi]
+Characteristics = 0x29 ;NCF_NOT_USER_REMOVABLE | NCF_VIRTUAL | NCF_HIDDEN
+CopyFiles = 
+
+[GigEFltMP.ndi.Services]
+AddService = mvGigECapture,0x2, GigEFltMP.AddService
+
+[GigEFltMP.AddService]
+ServiceType    = 1 ;SERVICE_KERNEL_DRIVER
+StartType      = 3 ;SERVICE_DEMAND_START
+ErrorControl   = 1 ;SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\mvGigECapture.sys
+
+[GigEFltMPP.AddService.AddReg]
+; None
+
+[Strings]
+MATRIX_VISION = "MATRIX VISION GmbH"
+GIGE_FLT_DESC = "MATRIX VISION GmbH GigE Vision Streaming Filter Miniport"
+
+[SourceDisksNames]
+;None 
+
+[SourceDisksFiles]
+;None

@@ -1,0 +1,77 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script type="text/javascript" src="sarissa.js"></script>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="jquery.tablesorter.min.js"></script>
+    <link rel="stylesheet" href="mvLogFileViewer.css" type="text/css" media="print, projection, screen" />
+    <title>mvIMPACT Acquire Log File Viewer</title>
+    <script type="text/javascript">
+        var stylesheet = '<?xml version="1.0" encoding="windows-1252"?><xsl:stylesheet xmlns:mv="http://matrix-vision.de/xml" version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">  <xsl:template match="/">    <xsl:apply-templates select="mvIMPACT_acquireLogFile"/>  </xsl:template>  <xsl:template match="mvIMPACT_acquireLogFile">    <!-- table for the log messages -->    <table border="0" width="100%" id="myTable" class="tablesorter">      <thead>        <tr>          <xsl:choose>            <xsl:when test="logfile/logmsg/@ts">              <th width="20">&#160;Timestamp&#160;</th>            </xsl:when>            <xsl:when test="logmsg/@ts">              <th width="20">&#160;Timestamp&#160;</th>            </xsl:when>          </xsl:choose>          <xsl:choose>            <xsl:when test="logfile/logmsg/@td">              <th width="20">&#160;Time&#160;<br></br>&#160;diff.&#160;</th>            </xsl:when>            <xsl:when test="logmsg/@td">              <th width="20">&#160;Time&#160;<br></br>&#160;diff.&#160;</th>            </xsl:when>          </xsl:choose>          <xsl:choose>            <xsl:when test="logfile/logmsg/@procId">              <th width="20">&#160;Proc.&#160;Id&#160;</th>            </xsl:when>            <xsl:when test="logmsg/@procId">              <th width="20">&#160;Proc.&#160;Id&#160;</th>            </xsl:when>          </xsl:choose>          <xsl:choose>            <xsl:when test="logfile/logmsg/@threadId">              <th width="20">&#160;Thread&#160;Id&#160;</th>            </xsl:when>            <xsl:when test="logmsg/@threadId">              <th width="20">&#160;Thread&#160;Id&#160;</th>            </xsl:when>          </xsl:choose>          <xsl:choose>            <xsl:when test="logfile/logmsg/@df">              <th width="20">&#160;Msg.&#160;<br></br>&#160;type&#160;</th>            </xsl:when>            <xsl:when test="logmsg/@df">              <th width="20">&#160;Msg.&#160;<br></br>&#160;type&#160;</th>            </xsl:when>          </xsl:choose>          <xsl:choose>            <xsl:when test="logfile/logmsg/@orgFile">              <th width="20">&#160;Original&#160;File&#160;</th>            </xsl:when>            <xsl:when test="logmsg/@orgFile">              <th width="20">&#160;Original&#160;File&#160;</th>            </xsl:when>          </xsl:choose>          <xsl:choose>            <xsl:when test="logfile/logmsg/@msg">              <th width="500">&#160;Message&#160;</th>            </xsl:when>            <xsl:when test="logmsg/@msg">              <th width="500">&#160;Message&#160;</th>            </xsl:when>          </xsl:choose>        </tr>      </thead>      <tbody>          <xsl:apply-templates select="logmsg"></xsl:apply-templates>          <xsl:apply-templates select="logfile/logmsg"></xsl:apply-templates>      </tbody>    </table>  </xsl:template>  <!-- template for a log message -->  <xsl:template match="logmsg">    <tr>      <!-- the time stamp -->      <xsl:choose>        <xsl:when test="./@ts">          <td align="right">            <xsl:attribute name="class">              df<xsl:value-of select="@df"/>            </xsl:attribute>            <xsl:value-of select="@ts"/>&#160;          </td>        </xsl:when>        <xsl:otherwise>          <td> </td>        </xsl:otherwise>      </xsl:choose>      <!-- The time difference -->      <xsl:choose>        <xsl:when test="./@td">          <td align="right">            <xsl:attribute name="class">              df<xsl:value-of select="@df"/>            </xsl:attribute>            <xsl:value-of select="@td"/>&#160;          </td>        </xsl:when>        <xsl:otherwise>          <td> </td>        </xsl:otherwise>      </xsl:choose>      <!-- The process ID -->            <xsl:choose>                <xsl:when test="./@procId">                    <td align="left">                        <xsl:attribute name="class">                            df<xsl:value-of select="@df" />                        </xsl:attribute>                        <xsl:value-of select="@procId" />&#160;                    </td>                </xsl:when>      </xsl:choose>      <!--The thread ID-->      <xsl:choose>        <xsl:when test="./@threadId">          <td align="left">            <xsl:attribute name="class">              df<xsl:value-of select="@df"/>            </xsl:attribute>            <xsl:value-of select="@threadId"/>&#160;          </td>        </xsl:when>      </xsl:choose>      <!-- The type of message -->      <xsl:choose>        <xsl:when test="./@df">          <td align="center">            <xsl:attribute name="class">              df<xsl:value-of select="@df"/>            </xsl:attribute>            <xsl:value-of select="@df"/>&#160;          </td>        </xsl:when>        <xsl:otherwise>          <td> </td>        </xsl:otherwise>      </xsl:choose>      <!-- The original file name -->      <xsl:choose>        <xsl:when test="./@orgFile">          <td align="left">            <xsl:attribute name="class">              df<xsl:value-of select="@df"/>            </xsl:attribute>            <xsl:value-of select="@orgFile"/>&#160;          </td>        </xsl:when>      </xsl:choose>      <!-- The message text -->      <xsl:choose>        <xsl:when test="./@msg">          <td align="left">            <xsl:attribute name="class">              df<xsl:value-of select="@df"/>            </xsl:attribute>            <xsl:value-of select="@msg"/>&#160;          </td>        </xsl:when>        <xsl:otherwise>          <td></td>        </xsl:otherwise>      </xsl:choose>    </tr>  </xsl:template></xsl:stylesheet>';
+        var xmlSource = ' ';
+
+        //loads a file fro the current directory and returns the content as text
+        function loadFile(file) {
+            var reader = new FileReader();
+            reader.onloadend = function () {
+                window.xmlSource += addFileAttr(reader.result,file.name);
+                showData(xmlSource);
+            };
+            reader.readAsText(file);
+        }
+
+        //loads files.mvloglist and populates the select box
+        function onLoad() {
+            document.getElementById('fileinput').addEventListener('change', onSelectionChanged, false);
+        }
+
+        function addFileAttr(data, fileName) {
+            var content = '<logfile>' + data + '</logfile>';
+            var xmlDoc = Sarissa.getDomDocument();
+            xmlDoc = (new DOMParser()).parseFromString(content.toString(), "text/xml");
+            $(xmlDoc).find('logmsg').each(function() {
+                $(this).attr('orgFile','.\\'+fileName);
+            });
+            return (new XMLSerializer()).serializeToString(xmlDoc);
+        }
+
+        //loads the selected xml file and triggers displaying of the transformed logfile
+        function onSelectionChanged() {
+            window.xmlSource = ' ';
+            var fileList = document.getElementById('fileinput').files
+            for(i = 0; i < fileList.length; i++) {
+               loadFile(fileList[i]);
+            }
+        }
+
+        //transforms the xml log file into HTML and displays the content in div section "Output"
+        function showData(data) {
+            var processor = new XSLTProcessor();
+            var xmlDoc = Sarissa.getDomDocument();
+            var xmlDoc = (new DOMParser()).parseFromString('<mvIMPACT_acquireLogFile>' + data.toString() + '</mvIMPACT_acquireLogFile>', "text/xml");
+            var xslDoc = Sarissa.getDomDocument();
+            var xslDoc = (new DOMParser()).parseFromString(stylesheet, "text/xml");
+            processor.importStylesheet(xslDoc);
+            var targetElem = document.getElementById("Output");
+            Sarissa.updateContentFromNode(xmlDoc, targetElem, processor);
+            $("#myTable").tablesorter();
+        }
+    </script>
+</head>
+<body bgcolor="#FFFFFF" onload="onLoad();">
+    <table border="0" width="100%">
+        <tr>
+            <td width="100%"><h1>mvIMPACT Acquire Log File Viewer</h1></td>
+            <td rowspan="2"><img align="right" alt="MATRIX VISION GmbH" src="logo.gif" /></td>
+        </tr>
+    </table>
+    <h3>Select a log file:</h3>
+    <div id="page-wrap">
+    <input type="file" accept=".mvlog" id="fileinput" multiple/>
+    </div>
+    <br />
+    <br />
+    <div id="Output">
+    </div>
+</body>
+</html>

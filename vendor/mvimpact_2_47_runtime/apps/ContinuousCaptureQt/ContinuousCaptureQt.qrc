@@ -1,0 +1,7 @@
+<RCC>
+  <qresource>
+    <file>bulb-on.png</file>
+    <file>bulb-off.png</file>
+    <file>../Common/mv.ico</file>
+  </qresource>
+</RCC>

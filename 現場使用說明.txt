@@ -1,0 +1,18 @@
+光譜影像均勻度演算軟體｜現場使用說明（已安裝 Python 版）
+
+1. 將整個資料夾複製到現場電腦的本機 SSD；放在 C 槽或 D 槽皆可。
+2. 現場電腦必須保留當時已驗證的 Python 3.9 環境，預設優先尋找 D:\Python39\python.exe。
+3. 雙擊根目錄的「啟動_光譜影像均勻度演算軟體.cmd」，不要直接雙擊 app.py。
+4. 啟動器會檢查 PySide6、NumPy、OpenCV、PyTorch、OpenPyXL、Harvester、GenICam，並把相機 runtime 同步到 LocalAppData 的純英數路徑；原生訊息會寫入 runtime_console.log，不會顯示黑色命令列視窗。
+5. 若 Python 位於其他位置，可先設定環境變數 FX17_PYTHON 指向正確的 python.exe。
+6. 新相機或曝光時間改變後，先重新執行黑白校正與推掃取像參數校正。
+7. 在「檢測分析」選擇輸出路徑後再按「開始」。
+8. 每次現場測試後，請備份分析工作階段資料夾與 acquisition_logs。
+9. 2026-09-01 版已支援小螢幕與 Windows 顯示縮放，熱圖會在可用區域內完整等比例顯示。
+10. 即時分析的 direct 與 fallback 遮罩都會只保留最大 8-connected component，零星孤立像素不列入均勻度與電阻值。
+
+重要說明：
+- 實測確認 GenICam／GenTL 在凍結或搬移的 Python runtime 中會卡在建立資料流；因此此版刻意使用現場原本可正常連線的已安裝 Python，而不是免安裝封裝。
+- 資料夾位置可以更換；Python 環境本身不要任意搬移。
+- NVIDIA 驅動與相機／網路卡系統驅動仍須由現場電腦提供。
+- 若啟動失敗，請提供根目錄的 startup_error.log、python_runtime_selection.log，以及動態分析模組/qt_demo/runtime_console.log。

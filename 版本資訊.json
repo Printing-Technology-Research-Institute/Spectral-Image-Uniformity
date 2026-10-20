@@ -1,0 +1,21 @@
+{
+  "product": "光譜影像均勻度演算軟體",
+  "build_time": "2026-09-03T15:40:39+08:00",
+  "runtime_mode": "validated installed Python 3.9",
+  "preferred_field_python": "D:/Python39/python.exe",
+  "fallback_local_python": "%LOCALAPPDATA%/Programs/Python/Python39/python.exe",
+  "runtime_override": "FX17_PYTHON",
+  "camera_thread_design": "camera fetch thread decoupled from 20-line image processing queue",
+  "native_runtime_launch": "python.exe with hidden cmd and valid stdout/stderr redirected to runtime_console.log",
+  "camera_chunk_lines": 20,
+  "camera_processing_queue_lines": 2048,
+  "camera_driver_buffer_count": 128,
+  "responsive_ui": "image viewports have no fixed 420x360 minimum; detector and margins adapt to usable window height",
+  "live_mask_strategy": "largest 8-connected component enforced after both direct and fallback SAM masking",
+  "acquisition_logging": true,
+  "camera_runtime_ascii_cache": "%LOCALAPPDATA%/FX17UniformityRuntime/mvimpact_2_47_runtime",
+  "cae_model": "cae_site16_ft_4fold_oof_50ep/final_model",
+  "calibration_pixel_p99": 4.263018490746617e-05,
+  "resistance_model": "resistance_model_no_thickness_v3_outputs/resistance_model_no_thickness.npz",
+  "packaging_decision": "Frozen, relocated, and pythonw runtimes were rejected because GenICam data-stream creation caused a persistent unresponsive GUI."
+}

@@ -1,0 +1,54 @@
+{
+  "args": {
+    "data_dir": "C:\\Users\\wu\\Desktop\\產學\\CAE訓練\\導電材料_RT_v3",
+    "run_name": "cae_all_v3",
+    "thickness": "all",
+    "include_excluded": true,
+    "seed": 42,
+    "val_ratio": 0.0,
+    "test_ratio": 0.0,
+    "cv_fold_index": null,
+    "cv_fold_count": 5,
+    "trim_bands": 10,
+    "pca_components": 8,
+    "max_pca_pixels": 80000,
+    "label_polarity": "auto",
+    "seed_percentile": 85.0,
+    "sam_threshold_deg": null,
+    "max_label_fraction": 0.32,
+    "patch_size": 32,
+    "patch_stride": 8,
+    "eval_stride": 16,
+    "min_mask_fraction": 0.15,
+    "include_mask_channel": true,
+    "base_channels": 32,
+    "epochs": 79,
+    "batch_size": 256,
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "patience": 12,
+    "num_workers": 0,
+    "device": "cuda",
+    "amp": true,
+    "channels_last": true,
+    "save_patches": false,
+    "residual_space": "spectral",
+    "skip_eval": true
+  },
+  "excluded_for_training": [
+    "50u_15_RT",
+    "70u_12_RT",
+    "70u_1_RT",
+    "70u_2_RT",
+    "70u_6_RT",
+    "70u_7_RT"
+  ],
+  "split_counts": {
+    "50u": {
+      "train": 15
+    },
+    "70u": {
+      "train": 15
+    }
+  }
+}

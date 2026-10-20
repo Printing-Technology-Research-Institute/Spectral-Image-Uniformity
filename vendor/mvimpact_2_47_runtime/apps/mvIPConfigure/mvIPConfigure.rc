@@ -1,0 +1,10 @@
+#define FILE_DESCRIPTION "MATRIX VISION Hardware Configuration Tool"
+#define INTERNAL_NAME "mvIPConfigure"
+#define ORIGINAL_FILENAME "mvIPConfigure.exe"
+#define PRODUCT_NAME "mvIPConfigure"
+
+#include "..\..\common\System\win32\common.rc2"
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON                    "mvIPConfigure.ico"

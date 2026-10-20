@@ -1,0 +1,89 @@
+; Installation INF for MATRIX VISION GmbH GigE Vision Capture Driver for Windows 2000/XP
+;
+; (c) 2007 - 2021 MATRIX VISION GmbH
+; ----------------------------------------------------------------------
+
+[Version]
+Signature           = "$Windows NT$"
+Class               = NetService
+ClassGUID           = {4D36E974-E325-11CE-BFC1-08002BE10318}
+Provider            = %MATRIX_VISION%
+DriverVer           = 12/09/2021, 2.4.3.72
+CatalogFile.NTx86   = mvGigECapture_x86.cat
+CatalogFile.NTamd64 = mvGigECapture_amd64.cat
+
+[Manufacturer]
+%MATRIX_VISION% = MatrixVision, NTx86, NTamd64
+
+[ControlFlags]
+; None
+
+; for Win2K
+[MatrixVision]
+%GIGE_FLT_DESC% = GigEFlt.ndi, mv_GigECapture
+
+; for XP and later
+[MatrixVision.NTx86]
+%GIGE_FLT_DESC% = GigEFlt.ndi, mv_GigECapture
+
+; for x64 versions of Windows
+[MatrixVision.NTamd64]
+%GIGE_FLT_DESC% = GigEFlt.ndi, mv_GigECapture
+
+[GigEFlt.ndi]
+AddReg          = GigEFlt.ndi.AddReg, GigEFlt.AddReg
+Characteristics = 0x4410 ;  NCF_FILTER | NCF_NDIS_PROTOCOL
+CopyFiles       = GigEFlt.Files.Sys
+CopyInf         = mvGigECapturem.inf
+
+[GigEFlt.ndi.Remove]
+DelFiles = GigEFlt.Files.Sys
+
+[GigEFlt.ndi.Services]
+AddService = mvGigECapture,, GigEFlt.AddService
+
+[GigEFlt.AddService]
+DisplayName    = %GIGE_FLT_SERVICE_DESC%
+ServiceType    = 1 ;SERVICE_KERNEL_DRIVER
+StartType      = 3 ;SERVICE_DEMAND_START
+ErrorControl   = 1 ;SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\mvGigECapture.sys
+LoadOrderGroup = PNP_TDI
+AddReg         = GigEFlt.AddService.AddReg
+
+[GigEFlt.AddService.AddReg]
+;
+
+[SourceDisksNames]
+1=%DiskDescription%,"",,
+
+[SourceDisksFiles]
+mvGigECapture.sys=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+GigEFlt.Files.Sys   = 12   ; %windir%\System32\drivers
+
+[GigEFlt.Files.Sys]
+mvGigECapture.sys,,,2
+
+[GigEFlt.ndi.AddReg]
+HKR, Ndi, HelpText, , %GIGE_FLT_HELP%
+HKR, Ndi,            FilterClass,         , failover
+HKR, Ndi,            FilterDeviceInfId,   , mv_GigECapturemp
+HKR, Ndi,            Service,             , mvGigECapture
+HKR, Ndi\Interfaces, UpperRange,          , noupper
+HKR, Ndi\Interfaces, LowerRange,          , nolower
+HKR, Ndi\Interfaces, FilterMediaTypes,    , "ethernet"
+
+[GigEFlt.AddReg]
+; None
+
+[GigEFlt.ndi.Remove.Services]
+DelService = mvGigECapture
+
+[Strings]
+MATRIX_VISION         = "MATRIX VISION GmbH"
+GIGE_FLT_DESC         = "MATRIX VISION GmbH GigE Vision Capture Filter"
+GIGE_FLT_HELP         = "MATRIX VISION GmbH GigE Vision Capture Driver"
+GIGE_FLT_SERVICE_DESC = "MATRIX VISION GmbH GigE Vision Capture Driver Service"

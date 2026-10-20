@@ -1,0 +1,85 @@
+; Installation INF for MATRIX VISION GmbH GigE Vision Capture Driver for Windows systems with NDIS 6 support (Windows Vista and onwards)
+;
+; (c) 2016 - 2021 MATRIX VISION GmbH
+; ----------------------------------------------------------------------
+
+[Version]
+Signature           = "$Windows NT$"
+Class               = NetService
+ClassGUID           = {4D36E974-E325-11CE-BFC1-08002BE10318}
+Provider            = %MATRIX_VISION%
+DriverVer=12/09/2021,3.2.3.72
+CatalogFile.NTx86   = mvGigECapture2_x86.cat
+CatalogFile.NTamd64 = mvGigECapture2_amd64.cat
+
+[Manufacturer]
+%MATRIX_VISION% = MatrixVision, NTx86, NTamd64
+
+[MatrixVision]
+%GIGE_FLT_DESC% = Install, mv_GigECapture2
+
+[MatrixVision.NTx86]
+%GIGE_FLT_DESC% = Install, mv_GigECapture2
+
+[MatrixVision.NTamd64]
+%GIGE_FLT_DESC% = Install, mv_GigECapture2
+
+;-------------------------------------------------------------------------
+; Installation Section
+;-------------------------------------------------------------------------
+[Install]
+AddReg = Inst_Ndi
+Characteristics = 0x40000
+NetCfgInstanceId = "{5AE7BE79-4F8A-4533-A7C4-0C74762239DB}"
+Copyfiles = mvGigECapture2.copyfiles.sys
+
+[SourceDisksNames]
+1=%GIGE_FLT_DESC%,"",,
+
+[SourceDisksFiles]
+mvGigECapture2.sys=1
+
+[DestinationDirs]
+DefaultDestDir=12
+mvGigECapture2.copyfiles.sys=12
+
+[mvGigECapture2.copyfiles.sys]
+mvGigECapture2.sys,,,2
+
+;-------------------------------------------------------------------------
+; Ndi installation support
+;-------------------------------------------------------------------------
+[Inst_Ndi]
+HKR, Ndi,Service,,"mvGigECapture2"
+HKR, Ndi,CoServices,0x00010000,"mvGigECapture2"
+HKR, Ndi,HelpText,,%GIGE_FLT_HELP%
+HKR, Ndi,FilterClass,, custom
+HKR, Ndi,FilterType,0x00010001,2
+HKR, Ndi\Interfaces,UpperRange,,"noupper"
+HKR, Ndi\Interfaces,LowerRange,,"nolower"
+HKR, Ndi\Interfaces, FilterMediaTypes,,"ethernet"
+HKR, Ndi,FilterRunType,0x00010001, 1 ; Mandatory filter
+
+;-------------------------------------------------------------------------
+; Service installation support
+;-------------------------------------------------------------------------
+[Install.Services]
+AddService=mvGigECapture2,,mvGigECapture2_Service_Inst
+
+[mvGigECapture2_Service_Inst]
+DisplayName     = %GIGE_FLT_DESC%
+ServiceType     = 1 ;SERVICE_KERNEL_DRIVER
+StartType       = 1 ;SERVICE_SYSTEM_START
+ErrorControl    = 1 ;SERVICE_ERROR_NORMAL
+ServiceBinary   = %12%\mvGigECapture2.sys
+LoadOrderGroup  = NDIS
+Description     = %GIGE_FLT_DESC%
+
+[Install.Remove.Services]
+DelService=mvGigECapture2,0x200 ; SPSVCINST_STOPSERVICE
+
+[Strings]
+MATRIX_VISION         = "MATRIX VISION GmbH"
+GIGE_FLT_DESC         = "MATRIX VISION GmbH GigE Vision Capture Filter(NDIS 6.x)"
+GIGE_FLT_HELP         = "MATRIX VISION GmbH GigE Vision Capture Driver(NDIS 6.x)"
+GIGE_FLT_SERVICE_DESC = "MATRIX VISION GmbH GigE Vision Capture Driver Service(NDIS 6.x)"

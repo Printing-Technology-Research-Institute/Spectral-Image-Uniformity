@@ -1,0 +1,21 @@
+{
+  "mean_oof_residual_30": 1.9630921315183514e-05,
+  "mean_oof_residual_50": 1.9468505342956632e-05,
+  "mean_oof_residual_change_percent_50_vs_30": -0.8273476808307564,
+  "oof_p99_30": 4.357806756161153e-05,
+  "oof_p99_50": 4.263018490746617e-05,
+  "oof_p99_change_percent_50_vs_30": -2.175136960364809,
+  "mean_uniformity_30_fixed_p99_30": 54.95229042125622,
+  "mean_uniformity_50_fixed_p99_30": 55.32499160172333,
+  "mean_val_loss_epoch_30": 0.059115640558132905,
+  "mean_val_loss_epoch_50": 0.05807734619414143,
+  "mean_val_loss_change_percent_50_vs_30": -1.7563784375650031,
+  "best_epochs_by_fold": [
+    50,
+    50,
+    50,
+    50
+  ],
+  "samples_improved": 16,
+  "sample_count": 16
+}

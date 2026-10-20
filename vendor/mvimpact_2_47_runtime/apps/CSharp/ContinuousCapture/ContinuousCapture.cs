@@ -1,0 +1,161 @@
+﻿using System;
+using System.Threading;
+
+#if USE_DISPLAY
+using mv.impact.acquire.display;
+#endif // #if USE_DISPLAY
+using mv.impact.acquire.examples.helper;
+
+namespace mv.impact.acquire.examples
+{
+    class ContinuousCapture
+    {
+        static void Main(string[] args)
+        {
+            mv.impact.acquire.LibraryPath.init(); // this will add the folders containing unmanaged libraries to the PATH variable.
+            Device pDev = DeviceAccess.getDeviceFromUserInput();
+            if (pDev == null)
+            {
+                Console.WriteLine("Unable to continue! Press any key to end the program.");
+                Console.Read();
+                Environment.Exit(1);
+            }
+
+            Console.WriteLine("Initialising the device. This might take some time...");
+            try
+            {
+                pDev.open();
+            }
+            catch (ImpactAcquireException e)
+            {
+                // this e.g. might happen if the same device is already opened in another process...
+                Console.WriteLine("An error occurred while opening device " + pDev.serial +
+                    "(error code: " + e.Message + "). Press any key to end the application...");
+                Console.ReadLine();
+                Environment.Exit(1);
+            }
+
+#if USE_DISPLAY
+            ImageDisplayWindow window = new ImageDisplayWindow(String.Format("mvIMPACT_acquire sample, Device {0}", pDev.serial.read()));
+#endif // #if USE_DISPLAY
+
+            bool terminated = false;
+            Console.WriteLine("Press [ENTER] to end the application");
+            Thread thread = new Thread(delegate ()
+            {
+                // establish access to the statistic properties
+                Statistics statistics = new Statistics(pDev);
+                // create an interface to the device found
+                FunctionInterface fi = new FunctionInterface(pDev);
+
+                // Send all requests to the capture queue. There can be more than 1 queue for some devices, but for this sample
+                // we will work with the default capture queue. If a device supports more than one capture or result
+                // queue, this will be stated in the manual. If nothing is mentioned about it, the device supports one
+                // queue only. This loop will send all requests currently available to the driver. To modify the number of requests
+                // use the property mv.impact.acquire.SystemSettings.requestCount at runtime or the property
+                // mv.impact.acquire.Device.defaultRequestCount BEFORE opening the device.
+                TDMR_ERROR result = TDMR_ERROR.DMR_NO_ERROR;
+                while ((result = (TDMR_ERROR)fi.imageRequestSingle()) == TDMR_ERROR.DMR_NO_ERROR) { };
+                if (result != TDMR_ERROR.DEV_NO_FREE_REQUEST_AVAILABLE)
+                {
+                    Console.WriteLine("'FunctionInterface.imageRequestSingle' returned with an unexpected result: {0}({1})", result, ImpactAcquireException.getErrorCodeAsString(result));
+                }
+
+                DeviceAccess.manuallyStartAcquisitionIfNeeded(pDev, fi);
+                // run thread loop
+                Request pRequest = null;
+                // we always have to keep at least 2 images as the display module might want to repaint the image, thus we
+                // cannot free it unless we have a assigned the display to a new buffer.
+                Request pPreviousRequest = null;
+                int timeout_ms = 500;
+                int cnt = 0;
+                int requestNr = Device.INVALID_ID;
+                while (!terminated)
+                {
+                    // wait for results from the default capture queue
+                    requestNr = fi.imageRequestWaitFor(timeout_ms);
+                    pRequest = fi.isRequestNrValid(requestNr) ? fi.getRequest(requestNr) : null;
+                    if (pRequest != null)
+                    {
+                        if (pRequest.isOK)
+                        {
+                            ++cnt;
+                            // here we can display some statistical information every 100th image
+                            if (cnt % 100 == 0)
+                            {
+                                Console.WriteLine("Info from {0}: {1}: {2}, {3}: {4}, {5}: {6}", pDev.serial.read(),
+                                    statistics.framesPerSecond.name, statistics.framesPerSecond.readS(),
+                                    statistics.errorCount.name, statistics.errorCount.readS(),
+                                    statistics.captureTime_s.name, statistics.captureTime_s.readS());
+                            }
+#if USE_DISPLAY
+#   if CLR_AT_LEAST_3_DOT_5
+                            // Extension methods are not supported by CLR versions smaller than 3.5 and this next function
+                            // is therefore not available then.
+                            window.imageDisplay.SetImage(pRequest);
+#   else
+                            // If extension methods are not available, the following function can be used instead. It is
+                            // not as convenient and will only work for some pixel formats. For more complex pixel formats
+                            // use other overloads of this method
+                            window.imageDisplay.SetImage(pRequest.imageData.read(), pRequest.imageWidth.read(), pRequest.imageHeight.read(), pRequest.imageBytesPerPixel.read() * 8, pRequest.imageLinePitch.read());
+#   endif
+                            window.imageDisplay.Update();
+#endif // #if USE_DISPLAY
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error: {0}", pRequest.requestResult.readS());
+                        }
+                        if (pPreviousRequest != null)
+                        {
+                            // this image has been displayed thus the buffer is no longer needed...
+                            pPreviousRequest.unlock();
+                        }
+                        pPreviousRequest = pRequest;
+                        // send a new image request into the capture queue
+                        fi.imageRequestSingle();
+                    }
+                    //else
+                    //{
+                        // Please note that slow systems or interface technologies in combination with high resolution sensors
+                        // might need more time to transmit an image than the timeout value which has been passed to imageRequestWaitFor().
+                        // If this is the case simply wait multiple times OR increase the timeout(not recommended as usually not necessary
+                        // and potentially makes the capture thread less responsive) and rebuild this application.
+                        // Once the device is configured for triggered image acquisition and the timeout elapsed before
+                        // the device has been triggered this might happen as well.
+                        // The return code would be -2119(DEV_WAIT_FOR_REQUEST_FAILED) in that case, the documentation will provide
+                        // additional information under TDMR_ERROR in the interface reference.
+                        // If waiting with an infinite timeout(-1) it will be necessary to call 'imageRequestReset' from another thread
+                        // to force 'imageRequestWaitFor' to return when no data is coming from the device/can be captured.
+                        // Console.WriteLine("imageRequestWaitFor failed ({0}, {1}), timeout value too small?", requestNr, ImpactAcquireException.getErrorCodeAsString(requestNr));
+                    //}
+                }
+                DeviceAccess.manuallyStopAcquisitionIfNeeded(pDev, fi);
+
+#if USE_DISPLAY
+                // stop the display from showing freed memory
+                window.imageDisplay.RemoveImage();
+#endif // #if USE_DISPLAY
+                // In this sample all the next lines are redundant as the device driver will be
+                // closed now, but in a real world application a thread like this might be started
+                // several times an then it becomes crucial to clean up correctly.
+
+                // free the last potentially locked request
+                if (pRequest != null)
+                {
+                    pRequest.unlock();
+                }
+                // clear all queues
+                fi.imageRequestReset(0, 0);
+            });
+
+            thread.Start();
+            Console.ReadLine();
+            terminated = true;
+            thread.Join();
+#if USE_DISPLAY
+            window.Dispose();
+#endif // #if USE_DISPLAY
+        }
+    }
+}
