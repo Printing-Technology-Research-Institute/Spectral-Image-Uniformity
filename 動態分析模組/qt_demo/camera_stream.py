@@ -208,6 +208,7 @@ class _LineProcessingWorker:
         self._state_lock = threading.Lock()
         self._pipeline = pipeline
         self._analysis_enabled = False
+        self._sample_sequence = 0
         self._generation = 0
         self._queue_drops = 0
         self._accepting = True
@@ -240,12 +241,13 @@ class _LineProcessingWorker:
             if pipeline is not None and pipeline is not self._pipeline:
                 self._pipeline = pipeline
                 changed = True
-            if (
-                analysis_enabled is not None
-                and bool(analysis_enabled) != self._analysis_enabled
-            ):
-                self._analysis_enabled = bool(analysis_enabled)
-                changed = True
+            if analysis_enabled is not None:
+                next_analysis_enabled = bool(analysis_enabled)
+                if next_analysis_enabled != self._analysis_enabled:
+                    if next_analysis_enabled:
+                        self._sample_sequence += 1
+                    self._analysis_enabled = next_analysis_enabled
+                    changed = True
             if changed:
                 self._generation += 1
 
@@ -306,9 +308,14 @@ class _LineProcessingWorker:
             except queue.Empty:
                 return
 
-    def _state(self) -> tuple[int, RawLinePipeline, bool]:
+    def _state(self) -> tuple[int, RawLinePipeline, bool, int]:
         with self._state_lock:
-            return self._generation, self._pipeline, self._analysis_enabled
+            return (
+                self._generation,
+                self._pipeline,
+                self._analysis_enabled,
+                self._sample_sequence,
+            )
 
     def _emit_block(
         self,
@@ -335,13 +342,13 @@ class _LineProcessingWorker:
             processing_queue_depth=self.queue_depth,
             processing_queue_drops=self.queue_drops,
         )
-        current_generation, _, _ = self._state()
+        current_generation, _, _, _ = self._state()
         if generation != current_generation:
             return sample_number
         for message in messages:
             message.sample_id = sample_id
             self._messages.put(message)
-            if message.kind in ("sample_end", "sample_rejected"):
+            if message.kind == "sample_end":
                 sample_number += 1
                 sample_id = f"FX17_{sample_number:04d}"
         return sample_number
@@ -355,6 +362,7 @@ class _LineProcessingWorker:
         pending_timestamps_ns: list[int | None] = []
         detector_preview_counter = 0
         sample_number = 1
+        active_sample_sequence = -1
         try:
             while True:
                 packet = self._queue.get()
@@ -362,9 +370,17 @@ class _LineProcessingWorker:
                     break
                 if self._force_stop.is_set():
                     break
-                generation, pipeline, analysis_enabled = self._state()
+                (
+                    generation,
+                    pipeline,
+                    analysis_enabled,
+                    sample_sequence,
+                ) = self._state()
                 if packet.generation != generation:
                     continue
+                if sample_sequence != active_sample_sequence:
+                    sample_number = 1
+                    active_sample_sequence = sample_sequence
                 if generation != active_generation:
                     pipeline.reset()
                     active_generation = generation
@@ -468,7 +484,7 @@ class FX17CameraStreamWorker:
         bands: int = 224,
         width: int = 640,
         chunk_lines: int = 20,
-        processing_queue_lines: int = 2048,
+        processing_queue_lines: int = 512,
         driver_buffer_count: int = 128,
         acquisition_log_enabled: bool = True,
         acquisition_log_dir: str | Path | None = WORKSPACE / "acquisition_logs",

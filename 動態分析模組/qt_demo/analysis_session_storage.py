@@ -211,8 +211,12 @@ class AnalysisSessionStorage:
         acquisition_metadata: dict[str, Any] | None,
     ) -> SampleOutputTarget:
         capture_timestamp = capture_started_at.strftime("%Y%m%d_%H%M%S_%f")
+        safe_sample_id = "".join(
+            ch if ch.isascii() and (ch.isalnum() or ch in "_-") else "_"
+            for ch in str(sample_id).strip()
+        ).strip("_-") or "sample"
         sample_dir = self._create_unique_directory(
-            self.session_dir / capture_timestamp
+            self.session_dir / f"{safe_sample_id}_{capture_timestamp}"
         )
         record_id = sample_dir.name
         target = SampleOutputTarget(

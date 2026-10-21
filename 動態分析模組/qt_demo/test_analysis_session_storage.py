@@ -48,6 +48,7 @@ class AnalysisSessionStorageTests(unittest.TestCase):
             storage.finish(datetime(2026, 8, 18, 9, 20, 0))
 
             self.assertEqual(target.file_stem, "20260818_091234_123456")
+            self.assertEqual(target.sample_dir.name, "FX17_0001_20260818_091234_123456")
             self.assertTrue(target.sample_dir.is_dir())
             self.assertTrue(storage.workbook_path.is_file())
             self.assertTrue((storage.calibration_dir / dark.name).is_file())

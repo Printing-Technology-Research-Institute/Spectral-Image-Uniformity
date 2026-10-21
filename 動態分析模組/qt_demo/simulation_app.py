@@ -45,7 +45,7 @@ SETTINGS_PATH = APP_DIR / "settings.example.json"
 DEFAULT_WINDOW_WIDTH = 1420
 DEFAULT_WINDOW_HEIGHT = 1020
 RUNTIME_SETTING_DEFAULTS = {
-    "camera_processing_queue_lines": 2048,
+    "camera_processing_queue_lines": 512,
     "camera_driver_buffer_count": 128,
     "camera_acquisition_log_enabled": True,
     "camera_acquisition_log_dir": "../../acquisition_logs",
@@ -234,7 +234,7 @@ def build_stream_worker(settings: dict) -> StreamWorker:
             width=int(settings.get("camera_width", 640)),
             chunk_lines=int(settings.get("camera_chunk_lines", 20)),
             processing_queue_lines=int(
-                settings.get("camera_processing_queue_lines", 2048)
+                settings.get("camera_processing_queue_lines", 512)
             ),
             driver_buffer_count=int(
                 settings.get("camera_driver_buffer_count", 128)

@@ -33,7 +33,7 @@ REQUIRED_FILES = (
     "電阻值模型/predict_resistance.py",
     "電阻值模型/train_resistance_model.py",
     "電阻值模型/thickness_classifier.py",
-    "電阻值模型/resistance_model_no_thickness_v3_outputs/resistance_model_no_thickness.npz",
+    "電阻值模型/resistance_model_all67_top10_outputs/resistance_model_no_thickness.npz",
 )
 
 PACKAGES = (

@@ -108,6 +108,23 @@ class _SlowPipeline:
         return []
 
 
+class _SequencedMessagePipeline(_SlowPipeline):
+    def __init__(self, kinds: list[str]) -> None:
+        super().__init__()
+        self.kinds = list(kinds)
+
+    def process_block(
+        self,
+        raw_block: np.ndarray,
+        *,
+        sample_id: str,
+        frame_ids: list[int | None],
+        timestamps_ns: list[int | None],
+    ) -> list[StreamMessage]:
+        self.blocks.append((list(frame_ids), list(timestamps_ns)))
+        return [StreamMessage(kind=self.kinds.pop(0), sample_id=sample_id)]
+
+
 class _RecordingNode:
     def __init__(self) -> None:
         self.writes: list[object] = []
@@ -785,6 +802,51 @@ class CameraProcessingDecouplingTests(unittest.TestCase):
 
         self.assertLess(submission_seconds, 0.10)
         self.assertGreater(processor.queue_drops, 0)
+
+    def test_new_analysis_interval_restarts_sample_numbering(self) -> None:
+        pipeline = _SequencedMessagePipeline(
+            ["sample_end", "sample_end", "sample_rejected", "sample_end"]
+        )
+        messages: queue.Queue[StreamMessage] = queue.Queue()
+        processor = _LineProcessingWorker(
+            pipeline=pipeline,
+            messages=messages,
+            chunk_lines=1,
+            queue_capacity_lines=8,
+            pipeline_config={
+                "detector_percentile_low": 1.0,
+                "detector_percentile_high": 99.0,
+            },
+            diagnostics=AcquisitionDiagnosticsLogger(None, enabled=False),
+        )
+        line = np.zeros((4, 5), dtype=np.uint16)
+        try:
+            processor.set_state(analysis_enabled=True, reset=True)
+            self.assertTrue(
+                processor.submit_line(line, frame_id=1, timestamp_ns=1)
+            )
+            self.assertEqual(messages.get(timeout=1.0).sample_id, "FX17_0001")
+            self.assertTrue(
+                processor.submit_line(line, frame_id=2, timestamp_ns=2)
+            )
+            self.assertEqual(messages.get(timeout=1.0).sample_id, "FX17_0002")
+
+            processor.set_state(analysis_enabled=False, reset=True)
+            processor.set_state(analysis_enabled=True, reset=True)
+            self.assertTrue(
+                processor.submit_line(line, frame_id=3, timestamp_ns=3)
+            )
+            rejected = messages.get(timeout=1.0)
+            self.assertEqual(rejected.kind, "sample_rejected")
+            self.assertEqual(rejected.sample_id, "FX17_0001")
+            self.assertTrue(
+                processor.submit_line(line, frame_id=4, timestamp_ns=4)
+            )
+            accepted = messages.get(timeout=1.0)
+            self.assertEqual(accepted.kind, "sample_end")
+            self.assertEqual(accepted.sample_id, "FX17_0001")
+        finally:
+            processor.close(timeout=1.0, drain=True)
 
 
 class AcquisitionDiagnosticsTests(unittest.TestCase):

@@ -1,6 +1,6 @@
 {
   "product": "光譜影像均勻度演算軟體",
-  "build_time": "2026-09-03T15:40:39+08:00",
+  "build_time": "2026-09-06T17:02:04+08:00",
   "runtime_mode": "validated installed Python 3.9",
   "preferred_field_python": "D:/Python39/python.exe",
   "fallback_local_python": "%LOCALAPPDATA%/Programs/Python/Python39/python.exe",
@@ -8,7 +8,9 @@
   "camera_thread_design": "camera fetch thread decoupled from 20-line image processing queue",
   "native_runtime_launch": "python.exe with hidden cmd and valid stdout/stderr redirected to runtime_console.log",
   "camera_chunk_lines": 20,
-  "camera_processing_queue_lines": 2048,
+  "camera_processing_queue_lines": 512,
+  "processing_logic_version": "A版_v2",
+  "sample_numbering": "each new analysis interval restarts at FX17_0001; rejected fragments do not consume a sample number",
   "camera_driver_buffer_count": 128,
   "responsive_ui": "image viewports have no fixed 420x360 minimum; detector and margins adapt to usable window height",
   "live_mask_strategy": "largest 8-connected component enforced after both direct and fallback SAM masking",
@@ -16,6 +18,17 @@
   "camera_runtime_ascii_cache": "%LOCALAPPDATA%/FX17UniformityRuntime/mvimpact_2_47_runtime",
   "cae_model": "cae_site16_ft_4fold_oof_50ep/final_model",
   "calibration_pixel_p99": 4.263018490746617e-05,
-  "resistance_model": "resistance_model_no_thickness_v3_outputs/resistance_model_no_thickness.npz",
-  "packaging_decision": "Frozen, relocated, and pythonw runtimes were rejected because GenICam data-stream creation caused a persistent unresponsive GUI."
+  "resistance_model": "resistance_model_all67_top10_outputs/resistance_model_no_thickness.npz",
+  "packaging_decision": "Frozen, relocated, and pythonw runtimes were rejected because GenICam data-stream creation caused a persistent unresponsive GUI.",
+  "material_segmentation": "brightest 10% of full-band mean reflectance; mean seed spectrum as SAM reference",
+  "resistance_feature_mask": "training: global-brightness glare-masked material pixels (third sample16 exception); live inference: full segmented material pixels, no glare mask",
+  "sample_folder_name": "sample_id_YYYYMMDD_HHMMSS_microseconds",
+  "live_glare_mask_enabled": false,
+  "resistance_model_sample_count": 67,
+  "resistance_model_components": 5,
+  "resistance_model_excluded_ids": [
+    "B3_FX17_0038"
+  ],
+  "resistance_model_updated_date": "2026-10-19",
+  "resistance_model_sha256": "dfb6dd9299d918b0f9d879ba936fcba33da451f938c83e06dafea4f179d122fa"
 }

@@ -60,7 +60,7 @@ class StreamPathTests(unittest.TestCase):
         self.assertEqual(settings["sample_start_threshold"], 0.05)
         self.assertEqual(settings["sample_end_threshold"], 0.04)
         self.assertEqual(settings["max_sample_lines"], 1200)
-        self.assertEqual(settings["camera_processing_queue_lines"], 2048)
+        self.assertEqual(settings["camera_processing_queue_lines"], 512)
         self.assertFalse(settings["save_analysis_captures"])
         self.assertEqual(settings["analysis_capture_limit_per_run"], 0)
         self.assertTrue(settings["save_sample_records"])

@@ -36,7 +36,7 @@ DEFAULT_CAE_CALIBRATION = DEFAULT_CAE_RUN_DIR / "site16_oof_calibration.json"
 DEFAULT_RESISTANCE_MODEL = (
     WORKSPACE
     / "電阻值模型"
-    / "resistance_model_no_thickness_v3_outputs"
+    / "resistance_model_all67_top10_outputs"
     / "resistance_model_no_thickness.npz"
 )
 
@@ -342,14 +342,30 @@ def _safe_sample_stem(sample_id: str) -> str:
     return stem or "sample"
 
 
+def validation_residual_heatmap(residual, label_mask, calibration_p99):
+    """Match validation plots: magma, residual/P99 in [0, 2], gray outside."""
+    if not np.isfinite(calibration_p99) or calibration_p99 <= 0:
+        raise ValueError("Residual display requires a positive finite P99")
+    valid = np.asarray(label_mask, dtype=bool) & np.isfinite(residual)
+    scaled = np.zeros_like(residual, dtype=np.float64)
+    scaled[valid] = np.clip(residual[valid] / calibration_p99 / 2.0, 0, 1)
+    # Bundled Matplotlib magma lookup table avoids a live Matplotlib dependency.
+    lut = np.load(Path(__file__).with_name("magma_rgb.npy"), allow_pickle=False)
+    indices = np.minimum((scaled * 256).astype(np.int32), 255)
+    heat = lut[indices].copy()
+    heat[~valid] = (244, 246, 249)
+    return np.ascontiguousarray(heat)
+
+
 def save_annotated_heatmap(
     path: str | Path,
     heatmap: np.ndarray,
     *,
     uniformity: float,
     resistance_ohm: float,
+    sample_id: str = "",
 ) -> Path:
-    """Save an RGB heatmap with the two report metrics embedded in the image."""
+    """Save the validation-style image with a centered sample-ID title."""
     import cv2
 
     output_path = Path(path).resolve()
@@ -362,18 +378,20 @@ def save_annotated_heatmap(
         (image.shape[0] + header_height, image.shape[1], 3),
         dtype=np.uint8,
     )
-    canvas[:header_height] = (24, 34, 48)
+    canvas[:header_height] = (255, 255, 255)
     canvas[header_height:] = image
-    text = f"Uniformity: {uniformity:.1f}%   Resistance: {resistance_ohm:.2f} ohm"
+    text = sample_id
     font_scale = max(0.55, min(1.1, image.shape[1] / 760.0))
+    thickness = max(1, int(round(font_scale * 2)))
+    text_width = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)[0][0]
     cv2.putText(
         canvas,
         text,
-        (16, int(header_height * 0.68)),
+        (max(0, (image.shape[1] - text_width) // 2), int(header_height * 0.68)),
         cv2.FONT_HERSHEY_SIMPLEX,
         font_scale,
-        (255, 255, 255),
-        max(1, int(round(font_scale * 2))),
+        (0, 0, 0),
+        thickness,
         cv2.LINE_AA,
     )
     success, encoded = cv2.imencode(".png", canvas[:, :, ::-1])
@@ -520,6 +538,10 @@ class LiveModelAnalyzer:
 
         cli_args = SimpleNamespace(data_dir=None, device=device, residual_space=None)
         self.run_args = load_run_args(self.cae_run_dir, cli_args)
+        # Live material segmentation: use the brightest 10% mean-reflectance pixels
+        # as the SAM reference spectrum, including the fallback path.
+        self.run_args.label_polarity = "bright"
+        self.run_args.seed_percentile = 90.0
         self.pca = load_pca(self.cae_run_dir)
         self.cae_model = load_model(self.cae_run_dir, self.device)
         self.resistance_model, self.resistance_metadata = load_resistance_model(
@@ -666,7 +688,7 @@ class LiveModelAnalyzer:
             1.0,
         )
         uniformity = 100.0 * (1.0 - normalized_error)
-        heatmap, _ = self.residual_to_heatmap(residual, label_mask)
+        heatmap = validation_residual_heatmap(residual, label_mask, self.calibration_p99)
 
         # Match the float32 reduction used when the resistance training cache was built.
         mean_spectrum = cube[label_mask].mean(axis=0).astype(np.float32)
@@ -685,6 +707,7 @@ class LiveModelAnalyzer:
                 heatmap,
                 uniformity=uniformity,
                 resistance_ohm=resistance,
+                sample_id=sample_id,
             )
         self._capture_analysis(
             capture_stem,
